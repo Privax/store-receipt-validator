@@ -6,6 +6,8 @@ use Guzzle\Http\Client as GuzzleClient;
 use JMS\Serializer\EventDispatcher\EventDispatcher;
 use JMS\Serializer\SerializerBuilder;
 use JMS\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use ReceiptValidator\iTunes\SerializationSubscriber\LatestReceiptDeserializerSubscriber;
 use ReceiptValidator\iTunes\SerializationSubscriber\PurchaseInfoDeserializerSubscriber;
 use ReceiptValidator\RunTimeException;
@@ -55,6 +57,13 @@ class Validator
      */
     protected $serializer;
 
+    /**
+     * Logger (optional)
+     *
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     public function __construct($endpoint = self::ENDPOINT_PRODUCTION, SerializerInterface $serializer = null)
     {
         if ($endpoint != self::ENDPOINT_PRODUCTION && $endpoint != self::ENDPOINT_SANDBOX) {
@@ -70,6 +79,9 @@ class Validator
         }
 
         $this->_endpoint = $endpoint;
+
+        // default logger is a null logger, inject a different one for actual logging
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -109,6 +121,7 @@ class Validator
 
     /**
      * @param string $iStoreSharedSecret
+     * @return Validator
      */
     public function setIStoreSharedSecret($iStoreSharedSecret)
     {
@@ -131,7 +144,7 @@ class Validator
      * set endpoint
      *
      * @param string $endpoint
-     * @return\ReceiptValidator\iTunes\Validator;
+     * @return \ReceiptValidator\iTunes\Validator;
      */
     function setEndpoint($endpoint)
     {
@@ -192,10 +205,17 @@ class Validator
 
         $httpResponse = $this->getClient()->post(null, null, $this->encodeRequest(), array('verify' => false))->send();
 
+        $this->getLogger()->debug(sprintf(
+            "Status %d from Apple iTunes, response: %s",
+            $httpResponse->getStatusCode(),
+            $httpResponse->getBody(true))
+        );
+
         if ($httpResponse->getStatusCode() != 200) {
             throw new RunTimeException('Unable to get response from itunes server');
         }
 
+        /** @var Response $response */
         $response = $this->serializer->deserialize($httpResponse->getBody(true), 'ReceiptValidator\iTunes\Response', 'json');
 
         // on a 21007 error retry the request in the sandbox environment (if the current environment is Production)
@@ -219,5 +239,24 @@ class Validator
         return ($attempt < self::ATTEMPT_THRESHOLD
             && $this->_endpoint == self::ENDPOINT_PRODUCTION
             && $response->getStatus() == Response::RESULT_SANDBOX_RECEIPT_SENT_TO_PRODUCTION);
+    }
+
+    /**
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     * @return Validator
+     */
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 }

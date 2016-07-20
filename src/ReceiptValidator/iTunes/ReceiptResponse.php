@@ -36,14 +36,14 @@ class ReceiptResponse
 
     /**
      * >= iOS 7
-     * @Type("array<ReceiptResponse>")
+     * @Type("array<ReceiptValidator\iTunes\ReceiptResponse>")
      * @SerializedName("in_app")
      */
     protected $inApp = array();
 
     /**
      * >= iOS 7
-     * @Type("boolean")
+     * @Type("string")
      * @SerializedName("is_trial_period")
      */
     protected $isTrialPeriod;
@@ -59,22 +59,22 @@ class ReceiptResponse
     protected $bvrs = '';
 
     /**
-    * @Type("string")
-    * @SerializedName("expires_date")
-    */
+     * @Type("DateTime<'Y-m-d H:i:s Etc/e'>")
+     * @SerializedName("expires_date")
+     */
     protected $expiresDate = '';
 
     /**
-    * @Type("DateTime<'Y-m-d H:i:s Etc/e'>")
-    * @SerializedName("expires_date_formatted")
+    * @Type("string")
+    * @SerializedName("expires_date_ms")
     */
-    protected $expiresDateFormatted = '';
+    protected $expiresDateMs = '';
 
     /**
-    * @Type("string")
-    * @SerializedName("expires_date_formatted_pst")
+    * @Type("DateTime<'Y-m-d H:i:s e'>")
+    * @SerializedName("expires_date_pst")
     */
-    protected $expiresDateFormattedPst = '';
+    protected $expiresDatePst = '';
 
     /**
     * @Type("string")
@@ -83,7 +83,7 @@ class ReceiptResponse
     protected $itemId = '';
 
     /**
-    * @Type("string")
+    * @Type("DateTime<'Y-m-d H:i:s Etc/e'>")
     * @SerializedName("original_purchase_date")
     */
     protected $originalPurchaseDate = '';
@@ -95,7 +95,7 @@ class ReceiptResponse
     protected $originalPurchaseDateMs = '';
 
     /**
-    * @Type("string")
+    * @Type("DateTime<'Y-m-d H:i:s e'>")
     * @SerializedName("original_purchase_date_pst")
     */
     protected $originalPurchaseDatePst = '';
@@ -113,7 +113,7 @@ class ReceiptResponse
     protected $productId = '';
 
     /**
-    * @Type("string")
+    * @Type("DateTime<'Y-m-d H:i:s Etc/e'>")
     * @SerializedName("purchase_date")
     */
     protected $purchaseDate = '';
@@ -125,7 +125,7 @@ class ReceiptResponse
     protected $purchaseDateMs = '';
 
     /**
-    * @Type("string")
+    * @Type("DateTime<'Y-m-d H:i:s e'>")
     * @SerializedName("purchase_date_pst")
     */
     protected $purchaseDatePst = '';
@@ -192,7 +192,7 @@ class ReceiptResponse
     }
 
     /**
-     * @return string
+     * @return \DateTime
      */
     public function getExpiresDate()
     {
@@ -200,7 +200,7 @@ class ReceiptResponse
     }
 
     /**
-     * @param string $expiresDate
+     * @param \DateTime $expiresDate
      */
     public function setExpiresDate($expiresDate)
     {
@@ -208,35 +208,35 @@ class ReceiptResponse
     }
 
     /**
-     * @return \DateTime
-     */
-    public function getExpiresDateFormatted()
-    {
-        return $this->expiresDateFormatted;
-    }
-
-    /**
-     * @param \DateTime $expiresDateFormatted
-     */
-    public function setExpiresDateFormatted($expiresDateFormatted)
-    {
-        $this->expiresDateFormatted = $expiresDateFormatted;
-    }
-
-    /**
      * @return string
      */
-    public function getExpiresDateFormattedPst()
+    public function getExpiresDateMs()
     {
-        return $this->expiresDateFormattedPst;
+        return $this->expiresDateMs;
     }
 
     /**
-     * @param string $expiresDateFormattedPst
+     * @param string $expiresDateMs
      */
-    public function setExpiresDateFormattedPst($expiresDateFormattedPst)
+    public function setExpiresDateMs($expiresDateMs)
     {
-        $this->expiresDateFormattedPst = $expiresDateFormattedPst;
+        $this->expiresDateMs = $expiresDateMs;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getExpiresDatePst()
+    {
+        return $this->expiresDatePst;
+    }
+
+    /**
+     * @param \DateTime $expiresDatePst
+     */
+    public function setExpiresDatePst($expiresDatePst)
+    {
+        $this->expiresDatePst = $expiresDatePst;
     }
 
     /**
@@ -336,7 +336,7 @@ class ReceiptResponse
     }
 
     /**
-     * @return string
+     * @return \DateTime
      */
     public function getPurchaseDate()
     {
@@ -344,7 +344,7 @@ class ReceiptResponse
     }
 
     /**
-     * @param string $purchaseDate
+     * @param \DateTime $purchaseDate
      */
     public function setPurchaseDate($purchaseDate)
     {
@@ -368,7 +368,7 @@ class ReceiptResponse
     }
 
     /**
-     * @return string
+     * @return \DateTime
      */
     public function getPurchaseDatePst()
     {
@@ -376,7 +376,7 @@ class ReceiptResponse
     }
 
     /**
-     * @param string $purchaseDatePst
+     * @param \DateTime $purchaseDatePst
      */
     public function setPurchaseDatePst($purchaseDatePst)
     {
@@ -538,7 +538,7 @@ class ReceiptResponse
     }
 
     /**
-     * @return array
+     * @return \ReceiptValidator\iTunes\ReceiptResponse[]
      */
     public function getInApp()
     {
@@ -554,7 +554,7 @@ class ReceiptResponse
     }
 
     /**
-     * @return bool
+     * @return string
      */
     public function getIsTrialPeriod()
     {
@@ -562,11 +562,21 @@ class ReceiptResponse
     }
 
     /**
-     * @param bool $isTrialPeriod
+     * @param string $isTrialPeriod
      */
     public function setIsTrialPeriod($isTrialPeriod)
     {
         $this->isTrialPeriod = $isTrialPeriod;
     }
-}
 
+    /**
+     * The is_trial_period is actually a string so it is deserialized into a string that contains
+     * either "false" or "true", here is a method that returns an actual boolean.
+     *
+     * @return bool
+     */
+    public function isTrialPeriod()
+    {
+        return $this->getIsTrialPeriod() === "true";
+    }
+}
